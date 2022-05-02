@@ -1,12 +1,12 @@
+##CAITLIN PESTANA
+##NOT DONE!!!! show_percentage_change_map() does not run
+
+
 import openpyxl
-import plotly
+import plotly.graph_objects
+import openpyxl.utils
 from state_abbrev import us_state_to_abbrev
 import numbers
-
-def open_worksheet():
-    income_excel = openpyxl.load_workbook("countyPopChange2020-2021.xlsx")
-    pop_worksheet = income_excel.active
-    return pop_worksheet
 
 def main():
     pop_worksheet = open_worksheet()
@@ -15,6 +15,11 @@ def main():
         return show_pop_change_map(pop_worksheet)
     else:
         return show_percentage_change_map(pop_worksheet)
+
+def open_worksheet():
+    income_excel = openpyxl.load_workbook("countyPopChange2020-2021.xlsx")
+    data_sheet = income_excel.active
+    return data_sheet
 
 def should_display_pop_change():
     response = input("Should we display a map of total population changes?")
@@ -38,59 +43,63 @@ def show_pop_change_map(pop_worksheet):
             state_abbrev = us_state_to_abbrev[state_name]
             list_of_state_abbrev.append(state_abbrev)
 
-        map_to_show = plotly.graph_objects.Figure(
-            data=plotly.graph_objects.Choropleth(
-            locations= list_of_state_abbrev[:],
+    map_to_show = plotly.graph_objects.Figure(
+        data=plotly.graph_objects.Choropleth(
+            locations= list_of_state_abbrev,
             z=population_changes,
             locationmode="USA-states",
             colorscale='Picnic',
             colorbar_title="population change 2021"))
 
-        map_to_show.update_layout(
-            title_text="Population Change 2021",
-            geo_scope="usa")
+    map_to_show.update_layout(
+        title_text="Population Change 2021",
+        geo_scope="usa")
 
-        map_to_show.show()
+    map_to_show.show()
 
 def show_percentage_change_map(pop_worksheet):
-    # answer = int(input("What is the cutoff for income growth"))
-    # print(f"States Whose Median Income Grew more than {answer} in 2015-2020")
     list_of_state_abbrev = []
-    list_of_income_changes = []
+    list_of_pop_change_percent = []
     for row in pop_worksheet.rows:
-        first_cell = row[0]
-        income_cell = row[1]
-        income_value = income_cell.value
-        if not isinstance(income_value, numbers.Number):
-            continue
-        if first_cell.value not in us_state_to_abbrev:
-            continue
+        first_cell = row[5]
+        population_change_cell = row[11]
+        pop_estimate_cell = row[9]
+        population_change_value = population_change_cell.value
+        pop_estimate_value = pop_estimate_cell.value
         state_name = first_cell.value
-        state_abrev = us_state_to_abbrev[state_name]
-        list_of_state_abbrev.append(state_abrev)
-        income2015_cell_number = openpyxl.utils.cell.column_index_from_string('n') - 1
-        income2015_cell = row[income2015_cell_number]
-        income2015 = income2015_cell.value
-        income_change = income_value - income2015
-        list_of_income_changes.append(income_change)
-        # income_chance_percent = income_change/income_value
-        # income_chance_percent = income_chance_percent *100
+        if not isinstance(population_change_value, numbers.Number):
+            continue
+        if not isinstance(pop_estimate_value, numbers.Number):
+            continue
+        if state_name not in us_state_to_abbrev:
+            continue
+        state_abbrev = us_state_to_abbrev[state_name]
+        list_of_state_abbrev.append(state_abbrev)
+        npopchg2021_cell_number = openpyxl.utils.cell.column_index_from_string('n') - 1
+        popestimate2021_cell_number = openpyxl.utils.cell.column_index_from_string('b') - 1
+        npopchg2021_cell = row[npopchg2021_cell_number]
+        popestimate2021_cell = row[popestimate2021_cell_number]
+        npopchg2021 = npopchg2021_cell.value
+        popestimate2021 = popestimate2021_cell.value
+        pop_change_percent = npopchg2021 / popestimate2021
+        pop_change_percent = pop_change_percent *100
+        list_of_pop_change_percent.append(pop_change_percent)
+
 
     map_to_show = plotly.graph_objects.Figure(
         data=plotly.graph_objects.Choropleth(
-            locations=us_state_to_abbrev,
-            z=list_of_income_changes,
+            locations=list_of_state_abbrev,
+            z= list_of_pop_change_percent,
             locationmode="USA-states",
             colorscale='Picnic',
-            colorbar_title="amount of income"
+            colorbar_title='percentage of population change'
         )
     )
     map_to_show.update_layout(
-        title_text="Income Change 2015 to 2020",
+        title_text="Percentage change of population 2020-2021",
         geo_scope="usa"
     )
     map_to_show.show()
 
 
 main()
-
