@@ -1,13 +1,15 @@
 ##CAITLIN PESTANA
-##NOT DONE!!!! show_percentage_change_map() does not run
+##all done- everything runs as expected
+##respond yes for a population change map//respond no for percentage change map
 
-
+##import packages
 import openpyxl
 import plotly.graph_objects
 import openpyxl.utils
 from state_abbrev import us_state_to_abbrev
 import numbers
 
+##define the main function//call all functions based on user input
 def main():
     pop_worksheet = open_worksheet()
     show_pop_change = should_display_pop_change()
@@ -16,11 +18,13 @@ def main():
     else:
         return show_percentage_change_map(pop_worksheet)
 
+##define open_worksheet function//return the excel sheet as data_sheet value
 def open_worksheet():
     income_excel = openpyxl.load_workbook("countyPopChange2020-2021.xlsx")
     data_sheet = income_excel.active
     return data_sheet
 
+##deine should_display_pop_change// collect user input
 def should_display_pop_change():
     response = input("Should we display a map of total population changes?")
     if response.lower() == "yes":
@@ -28,6 +32,7 @@ def should_display_pop_change():
     else:
         return False
 
+##define show_pop_change_mmap for when user responds yes
 def show_pop_change_map(pop_worksheet):
 
     list_of_state_abbrev = []
@@ -57,6 +62,8 @@ def show_pop_change_map(pop_worksheet):
 
     map_to_show.show()
 
+
+##define show_percentage_change_map for when user responds no
 def show_percentage_change_map(pop_worksheet):
     list_of_state_abbrev = []
     list_of_pop_change_percent = []
@@ -75,14 +82,14 @@ def show_percentage_change_map(pop_worksheet):
             continue
         state_abbrev = us_state_to_abbrev[state_name]
         list_of_state_abbrev.append(state_abbrev)
-        npopchg2021_cell_number = openpyxl.utils.cell.column_index_from_string('n') - 1
-        popestimate2021_cell_number = openpyxl.utils.cell.column_index_from_string('b') - 1
+        npopchg2021_cell_number = openpyxl.utils.cell.column_index_from_string('l') - 1
+        popestimate2021_cell_number = openpyxl.utils.cell.column_index_from_string('j') - 1
         npopchg2021_cell = row[npopchg2021_cell_number]
         popestimate2021_cell = row[popestimate2021_cell_number]
         npopchg2021 = npopchg2021_cell.value
         popestimate2021 = popestimate2021_cell.value
         pop_change_percent = npopchg2021 / popestimate2021
-        pop_change_percent = pop_change_percent *100
+        pop_change_percent = pop_change_percent * 100
         list_of_pop_change_percent.append(pop_change_percent)
 
 
